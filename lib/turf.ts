@@ -8,14 +8,19 @@ export type CalculateTurfInput = {
   fileName?: string
 }
 
+const MAX_COMBINATIONS_PER_STEP = 200000
+
 export function combinationCount(n: number, k: number): number {
   if (k < 0 || k > n) return 0
   if (k === 0 || k === n) return 1
 
+  const effectiveK = Math.min(k, n - k)
   let result = 1
-  for (let i = 1; i <= k; i += 1) {
-    result = (result * (n - (k - i))) / i
+
+  for (let i = 1; i <= effectiveK; i += 1) {
+    result = (result * (n - effectiveK + i)) / i
   }
+
   return Math.round(result)
 }
 
@@ -59,7 +64,13 @@ function calculateReachCount(matrix: number[][], combo: number[], positiveValue:
   return covered
 }
 
-export function calculateTurf({ matrix, headers, maxK, positiveValue = 1, fileName }: CalculateTurfInput): TurfResponse {
+export function calculateTurf({
+  matrix,
+  headers,
+  maxK,
+  positiveValue = 1,
+  fileName
+}: CalculateTurfInput): TurfResponse {
   const respondentCount = matrix.length
   const optionCount = headers.length
 
@@ -77,6 +88,14 @@ export function calculateTurf({ matrix, headers, maxK, positiveValue = 1, fileNa
   let previousReachPct = 0
 
   for (let k = 1; k <= safeMaxK; k += 1) {
+    const totalCombinations = combinationCount(optionCount, k)
+
+    if (totalCombinations > MAX_COMBINATIONS_PER_STEP) {
+      throw new Error(
+        `Слишком много комбинаций для точного расчёта при k=${k} (${totalCombinations.toLocaleString('ru-RU')}). Уменьшите max k или число атрибутов.`
+      )
+    }
+
     const combos = getCombinations(optionIndices, k)
     let bestReachCount = -1
     let bestCombo: number[] = []
@@ -91,6 +110,7 @@ export function calculateTurf({ matrix, headers, maxK, positiveValue = 1, fileNa
     }
 
     const reachPct = bestReachCount / respondentCount
+
     results.push({
       k,
       bestCombinationIndices: bestCombo,
@@ -99,6 +119,7 @@ export function calculateTurf({ matrix, headers, maxK, positiveValue = 1, fileNa
       reachPct,
       incrementalReachPct: reachPct - previousReachPct
     })
+
     previousReachPct = reachPct
   }
 
