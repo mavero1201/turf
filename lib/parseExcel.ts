@@ -29,6 +29,14 @@ function normalizeCell(value: unknown): number {
   throw new Error('Файл должен содержать только значения 0 и 1 в строках данных.')
 }
 
+function isCompletelyEmptyRow(row: (string | number | boolean | null)[]): boolean {
+  return row.every((cell) => {
+    if (cell === null || cell === undefined) return true
+    if (typeof cell === 'string') return cell.trim() === ''
+    return false
+  })
+}
+
 export function parseExcel(buffer: Buffer): ParsedExcel {
   const workbook = XLSX.read(buffer, { type: 'buffer' })
   const firstSheet = workbook.SheetNames[0]
@@ -51,14 +59,18 @@ export function parseExcel(buffer: Buffer): ParsedExcel {
   const rawHeaders = rows[0]
   const headers = rawHeaders.map((value, index) => {
     const label = String(value ?? '').trim()
-    return label || `Option_${index + 1}`
+    return label || `Атрибут_${index + 1}`
   })
 
   if (headers.length < 2) {
     throw new Error('Для TURF нужны как минимум две опции (два столбца).')
   }
 
-  const matrix = rows.slice(1).map((row, rowIndex) => {
+  const dataRows = rows
+    .slice(1)
+    .filter((row) => !isCompletelyEmptyRow(row))
+
+  const matrix = dataRows.map((row, rowIndex) => {
     if (row.length < headers.length) {
       throw new Error(`Строка ${rowIndex + 2} короче заголовка. Заполните все ячейки 0 или 1.`)
     }
