@@ -28,9 +28,11 @@ export default function UploadPanel() {
       return
     }
 
+    const safeMaxK = Math.max(1, Math.floor(maxK || 1))
+
     const formData = new FormData()
     formData.append('file', file)
-    formData.append('maxK', String(maxK))
+    formData.append('maxK', String(safeMaxK))
 
     setIsLoading(true)
 
@@ -64,7 +66,9 @@ export default function UploadPanel() {
             </div>
             <div>
               <h2 className="text-lg font-semibold text-slate-900">Загрузка данных</h2>
-              <p className="text-sm text-slate-600">Excel .xlsx, первый лист, строки - респонденты, столбцы - опции.</p>
+              <p className="text-sm text-slate-600">
+                Excel .xlsx, первый лист. Первая строка - названия атрибутов, со второй строки - данные респондентов 0/1.
+              </p>
             </div>
           </div>
 
@@ -102,12 +106,13 @@ export default function UploadPanel() {
                 id="maxK"
                 type="number"
                 min={1}
-                max={5}
                 value={maxK}
                 onChange={(event) => setMaxK(Number(event.target.value) || 1)}
                 className="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm outline-none ring-0 transition focus:border-blue-500"
               />
-              <p className="mt-2 text-xs text-slate-500">Для MVP рекомендуем не больше 5.</p>
+              <p className="mt-2 text-xs text-slate-500">
+                Практически для MVP обычно имеет смысл начинать с 3-5. При больших значениях расчёт может заметно замедляться.
+              </p>
             </div>
 
             <button
@@ -120,7 +125,7 @@ export default function UploadPanel() {
             </button>
 
             <div className="rounded-2xl bg-slate-50 p-4 text-xs leading-5 text-slate-600">
-              Ограничения MVP: до 20 опций, до 5 в max k, только значения 0/1, полный перебор комбинаций.
+              Текущая версия принимает бинарные данные 0/1. Первая строка используется как названия атрибутов. Расчёт выполняется точным перебором комбинаций, поэтому при большом числе атрибутов и высоком max k время обработки может увеличиваться.
             </div>
           </div>
         </div>
@@ -132,7 +137,7 @@ export default function UploadPanel() {
         <div className="space-y-6">
           <section className="grid gap-4 md:grid-cols-4">
             <MetricCard label="Респонденты" value={String(result.meta.respondents)} />
-            <MetricCard label="Опции" value={String(result.meta.options)} />
+            <MetricCard label="Атрибуты" value={String(result.meta.options)} />
             <MetricCard label="Max k" value={String(result.meta.maxK)} />
             <MetricCard label="Файл" value={result.meta.fileName ?? '-'} small />
           </section>
