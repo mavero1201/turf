@@ -12,6 +12,7 @@ const ACCEPT = '.xlsx'
 export default function UploadPanel() {
   const [file, setFile] = useState<File | null>(null)
   const [maxK, setMaxK] = useState(3)
+  const [submittedMaxK, setSubmittedMaxK] = useState<number | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<TurfResponse | null>(null)
@@ -29,6 +30,7 @@ export default function UploadPanel() {
     }
 
     const safeMaxK = Math.max(1, Math.floor(maxK || 1))
+    setSubmittedMaxK(safeMaxK)
 
     const formData = new FormData()
     formData.append('file', file)
@@ -55,6 +57,11 @@ export default function UploadPanel() {
       setIsLoading(false)
     }
   }
+
+  const wasKAdjusted =
+    result &&
+    submittedMaxK !== null &&
+    submittedMaxK > result.meta.maxK
 
   return (
     <div className="space-y-8">
@@ -136,10 +143,20 @@ export default function UploadPanel() {
         </div>
       </form>
 
-      {error ? <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div> : null}
+      {error ? (
+        <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+          {error}
+        </div>
+      ) : null}
 
       {result ? (
         <div className="space-y-6">
+          {wasKAdjusted ? (
+            <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+              Вы указали k = {submittedMaxK}, но в загруженном файле доступно только {result.meta.options} атрибутов. Поэтому расчёт выполнен с максимально возможным значением k = {result.meta.maxK}.
+            </div>
+          ) : null}
+
           <section className="grid gap-4 md:grid-cols-4">
             <MetricCard label="Респонденты" value={String(result.meta.respondents)} />
             <MetricCard label="Атрибуты" value={String(result.meta.options)} />
