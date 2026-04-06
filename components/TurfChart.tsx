@@ -33,10 +33,7 @@ export default function TurfChart({ results }: { results: TurfRowResult[] }) {
     <div className="space-y-4">
       <div className="h-[340px] w-full">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart
-            data={data}
-            margin={{ top: 24, right: 24, left: 8, bottom: 8 }}
-          >
+          <LineChart data={data} margin={{ top: 24, right: 24, left: 8, bottom: 8 }}>
             <CartesianGrid stroke="#e2e8f0" strokeDasharray="3 3" />
             <XAxis
               dataKey="k"
@@ -60,29 +57,30 @@ export default function TurfChart({ results }: { results: TurfRowResult[] }) {
                 if (!point) return null
 
                 return (
-                  <div className="max-w-[360px] rounded-2xl border border-slate-200 bg-white p-4 shadow-lg">
+                  <div className="max-w-[420px] rounded-2xl border border-slate-200 bg-white p-4 shadow-lg">
                     <div className="text-sm font-semibold text-slate-800">
                       Размер набора: {point.k}
                     </div>
+
                     <div className="mt-2 text-sm text-slate-700">
                       Охват: <span className="font-medium">{percent(point.reachPct)}</span>
                     </div>
-                    <div className="mt-2 text-sm text-slate-700">
+
+                    <div className="mt-3 text-sm font-medium text-slate-800">
                       Атрибуты:
                     </div>
-                    <div className="mt-1 text-sm leading-6 text-slate-600">
-                      {point.labels.join(', ')}
-                    </div>
+
+                    <ul className="mt-2 space-y-1 text-sm leading-6 text-slate-600">
+                      {point.labels.map((label: string, index: number) => (
+                        <li key={`${label}-${index}`}>• {label}</li>
+                      ))}
+                    </ul>
                   </div>
                 )
               }}
             />
 
-            <ReferenceLine
-              x={recommendedPoint.k}
-              stroke="#dc2626"
-              strokeDasharray="5 5"
-            />
+            <ReferenceLine x={recommendedPoint.k} stroke="#dc2626" strokeDasharray="5 5" />
 
             <Line
               type="monotone"
@@ -103,10 +101,8 @@ export default function TurfChart({ results }: { results: TurfRowResult[] }) {
         </ResponsiveContainer>
       </div>
 
-      <div className="rounded-[24px] border border-amber-200 bg-amber-50 px-5 py-4 text-sm leading-6 text-amber-900">
-        <div className="font-semibold">
-          Рекомендуемое количество атрибутов: {recommendedPoint.k}
-        </div>
+      <div className="rounded-[24px] border border-blue-100 bg-blue-50 px-5 py-4 text-sm leading-6 text-blue-800">
+        <div className="font-semibold">Рекомендуемое количество атрибутов — около {recommendedPoint.k}</div>
         <div className="mt-1">
           После этого шага прирост охвата становится неинтенсивным, поэтому дальнейшее расширение набора обычно даёт ограниченный дополнительный эффект.
         </div>
