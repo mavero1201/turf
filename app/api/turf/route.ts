@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { calculateTurf, combinationCount } from '@/lib/turf'
 import { parseExcel } from '@/lib/parseExcel'
 
-const MAX_OPTIONS = 20
-const MAX_K = 5
 const MAX_FILE_SIZE_MB = 10
 const MAX_EXACT_SET_OPERATIONS = 300000
 
@@ -31,14 +29,7 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(await file.arrayBuffer())
     const parsed = parseExcel(buffer)
 
-    if (parsed.headers.length > MAX_OPTIONS) {
-      return NextResponse.json(
-        { error: `Для MVP поддерживается не более ${MAX_OPTIONS} столбцов с опциями.` },
-        { status: 400 }
-      )
-    }
-
-    const safeMaxK = Math.min(Math.max(1, Math.floor(maxKValue || 3)), MAX_K, parsed.headers.length)
+    const safeMaxK = Math.min(Math.max(1, Math.floor(maxKValue || 3)), parsed.headers.length)
 
     let plannedOperations = 0
     for (let k = 1; k <= safeMaxK; k += 1) {
@@ -49,7 +40,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           error:
-            'Комбинаторика для точного расчёта слишком большая для MVP. Уменьшите число опций или max k.'
+            'Комбинаторика для точного расчёта слишком большая для текущей версии. Уменьшите max k или число атрибутов.'
         },
         { status: 400 }
       )
