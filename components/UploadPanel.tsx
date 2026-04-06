@@ -59,9 +59,9 @@ export default function UploadPanel() {
   }
 
   const wasKAdjusted =
-    result &&
     submittedMaxK !== null &&
-    submittedMaxK > result.meta.maxK
+    result !== null &&
+    submittedMaxK !== result.meta.maxK
 
   return (
     <div className="space-y-8">
