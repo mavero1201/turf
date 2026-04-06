@@ -25,9 +25,12 @@ export default function TurfChart({ results }: { results: TurfRowResult[] }) {
     labels: row.bestCombinationLabels
   }))
 
+  const slowdownIndex = results.findIndex((row, index) => index > 0 && row.incrementalReachPct < 0.05)
+
   const recommendedPoint =
-    results.find((row, index) => index > 0 && row.incrementalReachPct < 0.05) ??
-    results[results.length - 1]
+    slowdownIndex > 0
+      ? results[slowdownIndex - 1]
+      : results[results.length - 1]
 
   return (
     <div className="space-y-4">
@@ -101,10 +104,10 @@ export default function TurfChart({ results }: { results: TurfRowResult[] }) {
         </ResponsiveContainer>
       </div>
 
-      <div className="rounded-[24px] border border-blue-100 bg-blue-50 px-5 py-4 text-sm leading-6 text-blue-800">
-        <div className="font-semibold">Рекомендуемое количество атрибутов — около {recommendedPoint.k}</div>
+      <div className="rounded-[24px] border border-amber-200 bg-amber-50 px-5 py-4 text-sm leading-6 text-amber-900">
+        <div className="font-semibold">Рекомендуемое количество атрибутов: {recommendedPoint.k}</div>
         <div className="mt-1">
-          После этого шага прирост охвата становится неинтенсивным, поэтому дальнейшее расширение набора обычно даёт ограниченный дополнительный эффект.
+          Это последний шаг перед тем, как прирост охвата становится неинтенсивным. Дальнейшее расширение набора обычно даёт ограниченный дополнительный эффект.
         </div>
       </div>
     </div>
