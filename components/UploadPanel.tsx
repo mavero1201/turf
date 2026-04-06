@@ -24,7 +24,7 @@ export default function UploadPanel() {
     setResult(null)
 
     if (!file) {
-      setError('Сначала загрузите .xlsx файл.')
+      setError('Сначала загрузите файл .xlsx.')
       return
     }
 
@@ -58,21 +58,21 @@ export default function UploadPanel() {
 
   return (
     <div className="space-y-8">
-      <form onSubmit={handleSubmit} className="grid gap-6 lg:grid-cols-[1.5fr_1fr]">
-        <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="mb-5 flex items-center gap-3">
+      <form onSubmit={handleSubmit} className="grid gap-6 lg:grid-cols-[1.55fr_1fr]">
+        <div className="rounded-[32px] border border-slate-200 bg-white p-8 shadow-md">
+          <div className="mb-6 flex items-center gap-3">
             <div className="rounded-2xl bg-blue-50 p-3 text-blue-600">
               <Upload className="h-5 w-5" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-slate-900">Загрузка данных</h2>
+              <h2 className="text-lg font-semibold text-slate-800">Загрузка данных</h2>
               <p className="text-sm text-slate-600">
-                Excel .xlsx, первый лист. Первая строка - названия атрибутов, со второй строки - данные респондентов 0/1.
+                Файл Excel (.xlsx), первый лист. Первая строка - названия атрибутов, со второй строки - данные респондентов 0/1.
               </p>
             </div>
           </div>
 
-          <label className="flex min-h-[180px] cursor-pointer flex-col items-center justify-center rounded-[24px] border-2 border-dashed border-slate-300 bg-slate-50 px-6 py-8 text-center transition hover:border-blue-400 hover:bg-blue-50/40">
+          <label className="flex min-h-[190px] cursor-pointer flex-col items-center justify-center rounded-[28px] border-2 border-dashed border-slate-300 bg-slate-50 px-6 py-8 text-center transition hover:border-blue-400 hover:bg-blue-50/40">
             <input
               type="file"
               accept={ACCEPT}
@@ -80,20 +80,25 @@ export default function UploadPanel() {
               onChange={(event) => setFile(event.target.files?.[0] ?? null)}
             />
             <FileSpreadsheet className="mb-3 h-10 w-10 text-slate-500" />
-            <div className="text-base font-semibold text-slate-900">Выберите файл</div>
+            <div className="text-base font-semibold text-slate-800">Выберите файл</div>
             <div className="mt-1 text-sm text-slate-600">Поддерживается формат .xlsx</div>
-            <div className="mt-4 rounded-full bg-white px-4 py-2 text-sm text-slate-700 shadow-sm">{fileLabel}</div>
+            <div
+              className="mt-4 max-w-full truncate rounded-full bg-white px-4 py-2 text-sm text-slate-700 shadow-sm"
+              title={fileLabel}
+            >
+              {fileLabel}
+            </div>
           </label>
         </div>
 
-        <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="mb-5 flex items-center gap-3">
+        <div className="rounded-[32px] border border-slate-200 bg-white p-8 shadow-md">
+          <div className="mb-6 flex items-center gap-3">
             <div className="rounded-2xl bg-emerald-50 p-3 text-emerald-600">
               <BarChart3 className="h-5 w-5" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-slate-900">Параметры расчёта</h2>
-              <p className="text-sm text-slate-600">Точная версия MVP, без весов и без frequency.</p>
+              <h2 className="text-lg font-semibold text-slate-800">Параметры расчёта</h2>
+              <p className="text-sm text-slate-600">Точный расчёт без весов и без frequency.</p>
             </div>
           </div>
 
@@ -108,10 +113,10 @@ export default function UploadPanel() {
                 min={1}
                 value={maxK}
                 onChange={(event) => setMaxK(Number(event.target.value) || 1)}
-                className="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm outline-none ring-0 transition focus:border-blue-500"
+                className="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-blue-500"
               />
-              <p className="mt-2 text-xs text-slate-500">
-                Практически для MVP обычно имеет смысл начинать с 3-5. При больших значениях расчёт может заметно замедляться.
+              <p className="mt-2 text-xs leading-5 text-slate-500">
+                Рекомендуемое количество атрибутов для анализа - 3-5. При больших значениях расчёт может заметно замедляться.
               </p>
             </div>
 
@@ -142,13 +147,13 @@ export default function UploadPanel() {
             <MetricCard label="Файл" value={result.meta.fileName ?? '-'} small />
           </section>
 
-          <section className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
-            <h2 className="mb-4 text-lg font-semibold text-slate-900">Оптимальные комбинации по размеру набора</h2>
+          <section className="rounded-[32px] border border-slate-200 bg-white p-8 shadow-md">
+            <h2 className="mb-4 text-lg font-semibold text-slate-800">Оптимальные комбинации по размеру набора</h2>
             <ResultTable data={result} />
           </section>
 
-          <section className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
-            <h2 className="mb-2 text-lg font-semibold text-slate-900">Кривая накопленного охвата</h2>
+          <section className="rounded-[32px] border border-slate-200 bg-white p-8 shadow-md">
+            <h2 className="mb-2 text-lg font-semibold text-slate-800">Кривая накопленного охвата</h2>
             <p className="mb-4 text-sm text-slate-600">
               График показывает максимальный уникальный охват для каждого размера оптимального набора.
             </p>
@@ -165,9 +170,9 @@ export default function UploadPanel() {
 
 function MetricCard({ label, value, small = false }: { label: string; value: string; small?: boolean }) {
   return (
-    <div className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm">
+    <div className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-md transition hover:shadow-lg">
       <div className="text-sm text-slate-500">{label}</div>
-      <div className={`mt-2 font-semibold text-slate-900 ${small ? 'text-base' : 'text-2xl'}`}>{value}</div>
+      <div className={`mt-2 font-semibold text-slate-800 ${small ? 'text-base break-all' : 'text-2xl'}`}>{value}</div>
     </div>
   )
 }
