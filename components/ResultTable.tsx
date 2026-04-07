@@ -5,7 +5,6 @@ function percent(value: number) {
 }
 
 export default function ResultTable({ data }: { data: TurfResponse }) {
-  // логика определения recommended k (та же, что в графике)
   const slowdownIndex = data.results.findIndex(
     (row, index) => index > 0 && row.incrementalReachPct < 0.05
   )
@@ -46,7 +45,7 @@ export default function ResultTable({ data }: { data: TurfResponse }) {
                     {row.k}
                     {isRecommended ? (
                       <span className="ml-2 inline-flex items-center rounded-full bg-blue-600 px-2 py-0.5 text-[10px] font-medium text-white">
-                        recommended
+                        рекомендовано
                       </span>
                     ) : null}
                   </td>
