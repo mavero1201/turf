@@ -12,17 +12,17 @@ export default function Page() {
 
           <div className="relative max-w-3xl">
             <h1 className="text-3xl font-semibold tracking-tight text-slate-800 md:text-4xl">
-              Анализ Total Unduplicated Reach (TURF)
+              TURF-анализ: Total Unduplicated Reach and Frequency
             </h1>
 
             <p className="mt-5 text-base leading-7 text-slate-600">
               Загрузите Excel-файл, в котором:
               <br />
-              строки — отдельные респонденты,
+              строки - отдельные респонденты,
               <br />
-              столбцы — атрибуты (начиная с первого столбца),
+              столбцы - атрибуты (начиная с первого столбца),
               <br />
-              значения — бинарные (1 — выбран, 0 — не выбран).
+              значения - бинарные (1 - выбран, 0 - не выбран).
             </p>
 
             <p className="mt-4 text-base leading-7 text-slate-600">
