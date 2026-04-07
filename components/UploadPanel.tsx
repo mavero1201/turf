@@ -12,7 +12,7 @@ const ACCEPT = '.xlsx'
 
 export default function UploadPanel() {
   const [file, setFile] = useState<File | null>(null)
-  const [maxK, setMaxK] = useState(3)
+  const [maxK, setMaxK] = useState<number | ''>('')
   const [submittedMaxK, setSubmittedMaxK] = useState<number | null>(null)
   const [detectedOptionCount, setDetectedOptionCount] = useState<number | null>(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -29,7 +29,7 @@ export default function UploadPanel() {
 
     if (!nextFile) {
       setDetectedOptionCount(null)
-      setMaxK(3)
+      setMaxK('')
       return
     }
 
@@ -40,6 +40,7 @@ export default function UploadPanel() {
 
       if (!firstSheet) {
         setDetectedOptionCount(null)
+        setMaxK('')
         return
       }
 
@@ -58,9 +59,11 @@ export default function UploadPanel() {
         setMaxK(optionCount)
       } else {
         setDetectedOptionCount(null)
+        setMaxK('')
       }
     } catch {
       setDetectedOptionCount(null)
+      setMaxK('')
     }
   }
 
@@ -74,7 +77,7 @@ export default function UploadPanel() {
       return
     }
 
-    const safeMaxK = Math.max(1, Math.floor(maxK || 1))
+    const safeMaxK = Math.max(1, Math.floor(Number(maxK) || 1))
     setSubmittedMaxK(safeMaxK)
 
     const formData = new FormData()
@@ -170,7 +173,11 @@ export default function UploadPanel() {
                 type="number"
                 min={1}
                 value={maxK}
-                onChange={(event) => setMaxK(Number(event.target.value) || 1)}
+                placeholder="Будет определено по файлу"
+                onChange={(event) => {
+                  const value = event.target.value
+                  setMaxK(value === '' ? '' : Number(value))
+                }}
                 className="w-full rounded-2xl border border-slate-300 bg-white/95 px-4 py-3 text-sm text-slate-800 outline-none transition-all duration-200 focus:border-blue-500 focus:shadow-[0_0_0_4px_rgba(59,130,246,0.10)]"
               />
               <p className="mt-2 text-xs leading-5 text-slate-500">
