@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { BarChart3, FileSpreadsheet, Loader2, Upload } from 'lucide-react'
+import { BarChart3, Download, FileSpreadsheet, Loader2, Upload } from 'lucide-react'
 import * as XLSX from 'xlsx'
 import ResultTable from '@/components/ResultTable'
 import TurfChart from '@/components/TurfChart'
@@ -9,6 +9,16 @@ import InterpretationCard from '@/components/InterpretationCard'
 import type { TurfResponse } from '@/lib/types'
 
 const ACCEPT = '.xlsx'
+
+function percent(value: number) {
+  return `${(value * 100).toFixed(1)}%`
+}
+
+function buildExportFileName(sourceFileName?: string) {
+  if (!sourceFileName) return 'turf_results.xlsx'
+  const baseName = sourceFileName.replace(/\.xlsx$/i, '')
+  return `${baseName}_turf_results.xlsx`
+}
 
 export default function UploadPanel() {
   const [file, setFile] = useState<File | null>(null)
@@ -106,6 +116,43 @@ export default function UploadPanel() {
     }
   }
 
+  function handleExport() {
+    if (!result) return
+
+    const slowdownIndex = result.results.findIndex(
+      (row, index) => index > 0 && row.incrementalReachPct < 0.05
+    )
+
+    const recommendedK =
+      slowdownIndex > 0
+        ? result.results[slowdownIndex - 1]?.k
+        : result.results[result.results.length - 1]?.k
+
+    const rows = result.results.map((row) => ({
+      'Размер набора (k)': row.k,
+      'Лучшая комбинация': row.bestCombinationLabels.join(', '),
+      'Охват, n': row.reachCount,
+      'Охват, %': percent(row.reachPct),
+      'Прирост к прошлому шагу': row.k === 1 ? '-' : percent(row.incrementalReachPct),
+      'Статус': row.k === recommendedK ? 'рекомендовано' : ''
+    }))
+
+    const workbook = XLSX.utils.book_new()
+    const worksheet = XLSX.utils.json_to_sheet(rows)
+
+    worksheet['!cols'] = [
+      { wch: 18 },
+      { wch: 60 },
+      { wch: 12 },
+      { wch: 12 },
+      { wch: 24 },
+      { wch: 16 }
+    ]
+
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Результаты TURF')
+    XLSX.writeFile(workbook, buildExportFileName(result.meta.fileName))
+  }
+
   const wasKAdjusted =
     submittedMaxK !== null &&
     result !== null &&
@@ -190,15 +237,27 @@ export default function UploadPanel() {
               ) : null}
             </div>
 
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="relative inline-flex w-full items-center justify-center gap-2 overflow-hidden rounded-2xl bg-slate-900 px-4 py-3 text-sm font-medium text-white shadow-[0_10px_30px_rgba(15,23,42,0.18)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-slate-800 hover:shadow-[0_16px_36px_rgba(15,23,42,0.22)] disabled:cursor-not-allowed disabled:bg-slate-400 disabled:shadow-none"
-            >
-              <span className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.16)_0%,rgba(255,255,255,0)_45%)]" />
-              {isLoading ? <Loader2 className="relative h-4 w-4 animate-spin" /> : null}
-              <span className="relative">{isLoading ? 'Считаем TURF...' : 'Рассчитать TURF'}</span>
-            </button>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="relative inline-flex w-full items-center justify-center gap-2 overflow-hidden rounded-2xl bg-slate-900 px-4 py-3 text-sm font-medium text-white shadow-[0_10px_30px_rgba(15,23,42,0.18)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-slate-800 hover:shadow-[0_16px_36px_rgba(15,23,42,0.22)] disabled:cursor-not-allowed disabled:bg-slate-400 disabled:shadow-none"
+              >
+                <span className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.16)_0%,rgba(255,255,255,0)_45%)]" />
+                {isLoading ? <Loader2 className="relative h-4 w-4 animate-spin" /> : null}
+                <span className="relative">{isLoading ? 'Считаем TURF...' : 'Рассчитать TURF'}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleExport}
+                disabled={!result}
+                className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-300 bg-white/95 px-4 py-3 text-sm font-medium text-slate-700 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-slate-400 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <Download className="h-4 w-4" />
+                Скачать Excel
+              </button>
+            </div>
 
             <div className="rounded-2xl border border-slate-200/80 bg-slate-50/90 p-4 text-xs leading-5 text-slate-600 shadow-sm">
               Текущая версия принимает бинарные данные 0/1. Первая строка используется как названия атрибутов. Расчёт выполняется точным перебором комбинаций, поэтому при большом числе атрибутов и высоком max k время обработки может увеличиваться.
