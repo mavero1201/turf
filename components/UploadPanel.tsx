@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import { BarChart3, FileSpreadsheet, Loader2, Upload } from 'lucide-react'
+import * as XLSX from 'xlsx'
 import ResultTable from '@/components/ResultTable'
 import TurfChart from '@/components/TurfChart'
 import InterpretationCard from '@/components/InterpretationCard'
@@ -13,11 +14,55 @@ export default function UploadPanel() {
   const [file, setFile] = useState<File | null>(null)
   const [maxK, setMaxK] = useState(3)
   const [submittedMaxK, setSubmittedMaxK] = useState<number | null>(null)
+  const [detectedOptionCount, setDetectedOptionCount] = useState<number | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<TurfResponse | null>(null)
 
   const fileLabel = useMemo(() => file?.name ?? 'Файл ещё не выбран', [file])
+
+  async function handleFileChange(nextFile: File | null) {
+    setFile(nextFile)
+    setResult(null)
+    setError(null)
+    setSubmittedMaxK(null)
+
+    if (!nextFile) {
+      setDetectedOptionCount(null)
+      setMaxK(3)
+      return
+    }
+
+    try {
+      const buffer = await nextFile.arrayBuffer()
+      const workbook = XLSX.read(buffer, { type: 'array' })
+      const firstSheet = workbook.SheetNames[0]
+
+      if (!firstSheet) {
+        setDetectedOptionCount(null)
+        return
+      }
+
+      const sheet = workbook.Sheets[firstSheet]
+      const rows = XLSX.utils.sheet_to_json<(string | number | boolean | null)[]>(sheet, {
+        header: 1,
+        blankrows: false,
+        defval: null
+      })
+
+      const headerRow = rows[0] ?? []
+      const optionCount = headerRow.length
+
+      if (optionCount > 0) {
+        setDetectedOptionCount(optionCount)
+        setMaxK(optionCount)
+      } else {
+        setDetectedOptionCount(null)
+      }
+    } catch {
+      setDetectedOptionCount(null)
+    }
+  }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -87,7 +132,7 @@ export default function UploadPanel() {
               type="file"
               accept={ACCEPT}
               className="hidden"
-              onChange={(event) => setFile(event.target.files?.[0] ?? null)}
+              onChange={(event) => void handleFileChange(event.target.files?.[0] ?? null)}
             />
             <FileSpreadsheet className="mb-3 h-10 w-10 text-slate-500 transition-transform duration-300 group-hover:scale-[1.02]" />
             <div className="text-base font-semibold text-slate-800">Выберите файл</div>
@@ -129,8 +174,13 @@ export default function UploadPanel() {
                 className="w-full rounded-2xl border border-slate-300 bg-white/95 px-4 py-3 text-sm text-slate-800 outline-none transition-all duration-200 focus:border-blue-500 focus:shadow-[0_0_0_4px_rgba(59,130,246,0.10)]"
               />
               <p className="mt-2 text-xs leading-5 text-slate-500">
-                Рекомендуемое количество атрибутов для анализа - 3-5. При больших значениях расчёт может заметно замедляться.
+                По умолчанию используется максимально возможное значение k по числу атрибутов в файле. При необходимости можно задать меньшее значение для анализа наборов меньшего размера.
               </p>
+              {detectedOptionCount !== null ? (
+                <p className="mt-2 text-xs leading-5 text-slate-500">
+                  Сейчас по умолчанию установлено: <span className="font-medium text-slate-700">{detectedOptionCount}</span>
+                </p>
+              ) : null}
             </div>
 
             <button
